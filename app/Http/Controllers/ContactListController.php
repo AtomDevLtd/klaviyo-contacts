@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateContactListRequest;
 use App\Http\Requests\UpdateContactListRequest;
+use App\Jobs\CreateListInKlaviyoJob;
+use App\Jobs\UpdateContactListJob;
 use App\Models\ContactList;
 use Illuminate\Http\Request;
 
@@ -46,6 +48,8 @@ class ContactListController extends Controller
             'user_id'     => $request->user()->id
         ]);
 
+        CreateListInKlaviyoJob::dispatch($contactList);
+
         return redirect()->route('contactLists.index');
     }
 
@@ -76,9 +80,11 @@ class ContactListController extends Controller
 
         $validated = $request->validated();
 
-        $contactList->update([
+        $contactList = tap($contactList)->update([
             'name' => $validated['name']
         ]);
+
+        UpdateContactListJob::dispatch($contactList);
 
         return redirect()->route('contactLists.index');
     }
