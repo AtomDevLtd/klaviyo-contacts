@@ -15,7 +15,15 @@ class CreateContactListsTable extends Migration
     {
         Schema::create('contact_lists', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->unsignedBigInteger('user_id')->index();
+            $table->string('klaviyo_id')->nullable();
             $table->timestamps();
+
+            $table->foreign('user_id')
+                  ->references('id')
+                  ->on('users')
+                  ->onDelete('cascade');
         });
     }
 

@@ -2,74 +2,85 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateContactRequest;
+use App\Http\Requests\UpdateContactRequest;
 use App\Models\Contact;
-use Illuminate\Http\Request;
+use App\Models\ContactList;
 
 class ContactController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
-    public function index()
+    public function index(ContactList $contactList)
     {
-        //
+        $this->authorize('viewAny', [Contact::class, $contactList]);
+
+        $contacts = Contact::forContactList($contactList->id)->get();
+
+        return view('pages.contacts.index', compact('contacts','contactList'));
     }
 
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
-    public function create()
+    public function create(ContactList $contactList)
     {
-        //
+        $this->authorize('create', [Contact::class, $contactList]);
+
+        return view('pages.contacts.create', compact('contactList'));
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param CreateContactRequest $request
+     * @param ContactList $contactList
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
-    public function store(Request $request)
+    public function store(CreateContactRequest $request, ContactList $contactList)
     {
-        //
+       $validated = $request->validated();
+
+       $contactList->contacts()->create($validated);
+
+       return redirect()->route('contactLists.contacts.index', $contactList);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Contact  $contact
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Contact $contact)
-    {
-        //
-    }
 
     /**
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\Contact  $contact
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
-    public function edit(Contact $contact)
+    public function edit(ContactList $contactList, Contact $contact)
     {
-        //
+        $this->authorize('view', $contact);
+
+        return view('pages.contacts.edit', compact('contactList', 'contact'));
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  UpdateContactRequest  $request
      * @param  \App\Models\Contact  $contact
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, Contact $contact)
+    public function update(UpdateContactRequest $request, ContactList $contactList, Contact $contact)
     {
-        //
+        $this->authorize('update', $contact);
+
+        $validated = $request->validated();
+
+        $contact->update($validated);
+
+        return redirect()->route('contactLists.contacts.index', $contactList);
     }
 
     /**

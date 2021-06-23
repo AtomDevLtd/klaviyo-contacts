@@ -21,7 +21,13 @@ class CreateContactsTable extends Migration
             $table->string('phone')->nullable();
             $table->string('title')->nullable();
             $table->string('organization')->nullable();
+            $table->unsignedBigInteger('contact_list_id')->index();
             $table->timestamps();
+
+            $table->foreign('contact_list_id')
+                  ->references('id')
+                  ->on('contact_lists')
+                  ->onDelete('cascade');
         });
     }
 

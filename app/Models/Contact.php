@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @method static forContactList($listId)
+ */
 class Contact extends Model
 {
     use HasFactory;
@@ -14,7 +18,10 @@ class Contact extends Model
         'first_name',
         'last_name',
         'email',
-        'phone'
+        'phone',
+        'title',
+        'organization',
+        'contact_list_id'
     ];
 
     /**
@@ -26,6 +33,16 @@ class Contact extends Model
      * All of the models scopes methods
      * should begin from here.
      */
+
+    /**
+     * @param Builder $query
+     * @param $listId
+     * @return Builder
+     */
+    public function scopeForContactList(Builder $query, $listId): Builder
+    {
+        return $query->where('contact_list_id', $listId);
+    }
 
     /**
      * All of the models custom methods
@@ -49,5 +66,13 @@ class Contact extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return BelongsTo
+     */
+    public function contactList(): BelongsTo
+    {
+        return $this->belongsTo(ContactList::class);
     }
 }
