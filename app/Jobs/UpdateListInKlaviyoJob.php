@@ -11,7 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class UpdateContactListJob implements ShouldQueue
+class UpdateListInKlaviyoJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -37,10 +37,9 @@ class UpdateContactListJob implements ShouldQueue
      */
     public function handle()
     {
-        KlaviyoConnection::url('https://a.klaviyo.com/api/v2/list/' . $this->contactList->klaviyo_id)
+        KlaviyoConnection::url(config('project.klaviyo_base_url') . '/v2/list/' . $this->contactList->klaviyo_id)
                          ->header('Content-Type', 'application/x-www-form-urlencoded')
                          ->data($this->contactList)
-                         ->customParams('api_key', config('project.klaviyo_account_key'))
-                         ->put();
+                         ->updateList();
     }
 }

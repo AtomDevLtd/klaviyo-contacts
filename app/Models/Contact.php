@@ -21,7 +21,9 @@ class Contact extends Model
         'phone',
         'title',
         'organization',
-        'contact_list_id'
+        'contact_list_id',
+        'klaviyo_id',
+        'klaviyo_sync_datetime'
     ];
 
     /**

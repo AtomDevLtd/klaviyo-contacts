@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateContactListRequest;
 use App\Http\Requests\UpdateContactListRequest;
 use App\Jobs\CreateListInKlaviyoJob;
-use App\Jobs\UpdateContactListJob;
+use App\Jobs\UpdateListInKlaviyoJob;
 use App\Models\ContactList;
 use Illuminate\Http\Request;
 
@@ -14,11 +14,12 @@ class ContactListController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
-        $contactLists = ContactList::forUser(auth()->id())->get();
+        $contactLists = ContactList::forUser($request->user()->getKey())->get();
 
         return view('pages.contact-lists.index', compact('contactLists'));
     }
@@ -45,7 +46,7 @@ class ContactListController extends Controller
 
         $contactList = ContactList::create([
             'name'        => $validated['name'],
-            'user_id'     => $request->user()->id
+            'user_id'     => $request->user()->getKey()
         ]);
 
         CreateListInKlaviyoJob::dispatch($contactList);
@@ -84,7 +85,7 @@ class ContactListController extends Controller
             'name' => $validated['name']
         ]);
 
-        UpdateContactListJob::dispatch($contactList);
+        UpdateListInKlaviyoJob::dispatch($contactList);
 
         return redirect()->route('contactLists.index');
     }

@@ -37,10 +37,10 @@ class CreateListInKlaviyoJob implements ShouldQueue
      */
     public function handle()
     {
-        KlaviyoConnection::url('https://a.klaviyo.com/api/v2/lists?api_key=' . config('project.klaviyo_account_key'))
+        KlaviyoConnection::url(config('project.klaviyo_base_url') . '/v2/lists?api_key=' . config('project.klaviyo_account_key'))
                          ->header('Content-Type', 'application/x-www-form-urlencoded')
                          ->data($this->contactList)
-                         ->post()
-                         ->updateModel('klaviyo_id','list_id');
+                         ->createList()
+                         ->saveKlaviyoListId();
     }
 }
