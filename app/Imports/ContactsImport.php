@@ -1,28 +1,39 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Imports;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Contact;
+use App\Models\ContactList;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class CreateContactRequest extends FormRequest
+class ContactsImport implements ToModel, WithHeadingRow
 {
     /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
+     * @var ContactList $contactList
      */
-    public function authorize()
+    public ContactList $contactList;
+
+    public function __construct(ContactList $contactList)
     {
-        return $this->contactList->user_id === $this->user()->id;
+        $this->contactList = $contactList;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
-    public function rules()
+    public function model(array $row)
+    {
+        return new Contact([
+            'email'        => $row['email'],
+            'first_name'   => $row['first_name'] ?? null ,
+            'last_name'    => $row['last_name'] ?? null,
+            'title'        => $row['title'] ?? null,
+            'organization' => $row['organization'] ?? null,
+            'phone'        => $row['phone'] ?? null,
+            'contact_list_id' => $this->contactList->id
+        ]);
+    }
+
+    public function rules(): array
     {
         return [
             'first_name' => [
@@ -60,6 +71,7 @@ class CreateContactRequest extends FormRequest
                 'max:255',
                 'phone:US,BE,BG,PL'
             ],
+            'contact_list_id' => Rule::exists('contact-lists', 'id')
         ];
     }
 }

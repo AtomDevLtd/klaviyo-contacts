@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateContactRequest;
 use App\Http\Requests\UpdateContactRequest;
+use App\Imports\ContactsImport;
 use App\Jobs\AddMemberToListInKlaviyoJob;
 use App\Jobs\UpdateMemberToListInKlaviyoJob;
 use App\Models\Contact;
 use App\Models\ContactList;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ContactController extends Controller
 {
@@ -50,7 +54,7 @@ class ContactController extends Controller
 
        $contact = $contactList->contacts()->create($validated);
 
-       AddMemberToListInKlaviyoJob::dispatch($contact);
+       AddMemberToListInKlaviyoJob::dispatch($contact)->onQueue('contact');
 
        return redirect()->route('contactLists.contacts.index', $contactList);
     }
@@ -84,9 +88,27 @@ class ContactController extends Controller
 
         $contact = tap($contact)->update($validated);
 
-        UpdateMemberToListInKlaviyoJob::dispatch($contact);
+        UpdateMemberToListInKlaviyoJob::dispatch($contact)->onQueue('contact');
 
         return redirect()->route('contactLists.contacts.index', $contactList);
+    }
+
+    /**
+     * @param Request $request
+     * @param ContactList $contactList
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function import(Request $request, ContactList $contactList): RedirectResponse
+    {
+        $request->validate([
+            'file' => 'required|file'
+        ]);
+
+        $import = new ContactsImport($contactList);
+
+        Excel::import($import, request()->file('file'));
+
+        return back();
     }
 
     /**
@@ -95,8 +117,14 @@ class ContactController extends Controller
      * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Contact $contact)
+    public function syncWithKlaviyo(Contact $contact)
     {
-        //
+       if(!$contact->klaviyo_id){
+           AddMemberToListInKlaviyoJob::dispatch($contact)->onQueue('contact');
+       }
+
+        return response([
+            'data' => $contact
+        ], 200);
     }
 }

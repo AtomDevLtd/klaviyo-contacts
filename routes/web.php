@@ -31,6 +31,8 @@ Route::group([
 
     Route::resource('contactLists', ContactListController::class);
     Route::resource('contactLists.contacts', ContactController::class);
+    Route::post('/contactLists/{contactList}/contactsImport', [ContactController::class, 'import'])->name('contacts-import');
+    Route::put('/contacts/sync/{contact}', [ContactController::class, 'syncWithKlaviyo'])->name('sync.klaviyo');
 
 });
 

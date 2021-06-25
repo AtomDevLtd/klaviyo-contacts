@@ -12,6 +12,14 @@
                 </h4>
             </div>
             <div class="flex justify-end">
+                <form action="{{ route('contacts-import', $contactList) }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <label for="file" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                        <span>Upload a file</span>
+                        <input type="file" name="file">
+                    </label>
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold mx-2 py-2 px-4 border border-blue-700 rounded">Import contacts</button>
+                </form>
                 <a href="{{ route('contactLists.contacts.create', $contactList) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded">
                     Create Contact
                 </a>
@@ -26,7 +34,7 @@
                     <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                         <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
                             <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                                <table class="min-w-full divide-y divide-gray-200">
+                                <table id="contacts-table" class="min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gray-50">
                                     <tr>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -40,6 +48,9 @@
                                         </th>
                                         <th scope="col" class="relative px-6 py-3">
                                             <span class="sr-only">Edit</span>
+                                        </th>
+                                        <th scope="col" class="relative px-6 py-3">
+                                            <span class="sr-only">Synced In Klaviyo</span>
                                         </th>
                                     </tr>
                                     </thead>
@@ -65,6 +76,20 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <a href="{{ route('contactLists.contacts.edit', [$contactList, $contact->id]) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                             </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                @if($contact->klaviyo_id)
+                                                    <button data-synced="{{$contact->id}}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 synced">
+                                                        Synced
+                                                    </button>
+                                                @else
+                                                    <button class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-300 text-red--800 not-synced">
+                                                        Not synced
+                                                    </button>
+                                                    <button  data-sync-with-klaviyo-id="{{$contact->id}}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-200 text-red-600 try-sync">
+                                                        Try
+                                                    </button>
+                                                @endif
+                                            </td>
                                         </tr>
                                     @endforeach
                                     </tbody>
@@ -76,4 +101,48 @@
             </div>
         </div>
     </div>
+    @push('page-scripts')
+        <script>
+            $(document).ready(function(){
+                $('body').on('click', '.try-sync', function(e) {
+
+                    e.preventDefault();
+
+                    let contact = $(this).data('sync-with-klaviyo-id');
+
+                    if (contact) {
+
+                        $.ajaxSetup({
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            }
+                        });
+
+
+                        $.ajax({
+                            method: 'post',
+                            url: '/contacts/sync/' + contact,
+                            data: {
+                                _method: 'PUT',
+                            },
+                            success: function (response) {
+                                if(response){
+                                    $('#contacts-table').find('[data-sync-with-klaviyo-id="' + response.data.id + '"]').remove();
+                                }
+                            },
+                            error: function (jqXHR) {
+
+                                console.log('error');
+
+                            }
+                        });
+
+                    }
+
+                });
+            });
+
+        </script>
+    @endpush
 </x-app-layout>
+

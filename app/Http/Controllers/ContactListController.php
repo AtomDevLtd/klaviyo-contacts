@@ -49,7 +49,7 @@ class ContactListController extends Controller
             'user_id'     => $request->user()->getKey()
         ]);
 
-        CreateListInKlaviyoJob::dispatch($contactList);
+        CreateListInKlaviyoJob::dispatch($contactList)->onQueue('contact-list');
 
         return redirect()->route('contactLists.index');
     }
@@ -85,7 +85,7 @@ class ContactListController extends Controller
             'name' => $validated['name']
         ]);
 
-        UpdateListInKlaviyoJob::dispatch($contactList);
+        UpdateListInKlaviyoJob::dispatch($contactList)->onQueue('contact-list');
 
         return redirect()->route('contactLists.index');
     }
