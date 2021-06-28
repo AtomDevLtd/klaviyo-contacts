@@ -28,11 +28,13 @@ class UpdateContactRequest extends FormRequest
                 'sometimes',
                 'nullable',
                 'string',
+                'max:255',
             ],
             'last_name' => [
                 'sometimes',
                 'nullable',
                 'string',
+                'max:255',
             ],
             'email' => [
                 'required',
@@ -42,16 +44,20 @@ class UpdateContactRequest extends FormRequest
                 'sometimes',
                 'nullable',
                 'string',
+                'max:255',
             ],
             'organization' => [
                 'sometimes',
                 'nullable',
                 'string',
+                'max:255',
             ],
             'phone' => [
                 'sometimes',
                 'nullable',
                 'string',
+                'max:255',
+                'phone:US,BE,BG,PL'
             ],
         ];
     }

@@ -11,6 +11,7 @@ use App\Models\Contact;
 use App\Models\ContactList;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ContactController extends Controller
@@ -54,9 +55,12 @@ class ContactController extends Controller
 
        $contact = $contactList->contacts()->create($validated);
 
-       AddMemberToListInKlaviyoJob::dispatch($contact)->onQueue('contact');
+       AddMemberToListInKlaviyoJob::dispatchIf(
+           $request->user()->hasKlaviyoApiKeys() && $contactList->isInKlaviyo(),
+           $contact)
+                                  ->onQueue('contact');
 
-       return redirect()->route('contactLists.contacts.index', $contactList);
+       return redirect()->route('contactLists.contacts.index', $contactList)->with('message', 'Contact saved successfully');
     }
 
 
@@ -88,9 +92,12 @@ class ContactController extends Controller
 
         $contact = tap($contact)->update($validated);
 
-        UpdateMemberToListInKlaviyoJob::dispatch($contact)->onQueue('contact');
+        UpdateMemberToListInKlaviyoJob::dispatchIf(
+            $request->user()->hasKlaviyoApiKeys() && $contactList->isInKlaviyo(),
+            $contact)
+                                      ->onQueue('contact');
 
-        return redirect()->route('contactLists.contacts.index', $contactList);
+        return redirect()->route('contactLists.contacts.index', $contactList)->with('message', 'Contact updated successfully');
     }
 
     /**
@@ -101,30 +108,34 @@ class ContactController extends Controller
     public function import(Request $request, ContactList $contactList): RedirectResponse
     {
         $request->validate([
-            'file' => 'required|file'
+            'file' => 'required|file|mimes:xlsx,xls',
         ]);
 
         $import = new ContactsImport($contactList);
 
         Excel::import($import, request()->file('file'));
 
-        return back();
+        return redirect()->route('contactLists.contacts.index', $contactList)->with('message', 'Contacts saved successfully');
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Contact  $contact
+     * @param Request $request
+     * @param \App\Models\Contact $contact
      * @return \Illuminate\Http\Response
      */
-    public function syncWithKlaviyo(Contact $contact)
+    public function syncWithKlaviyo(Request $request, Contact $contact): Response
     {
-       if(!$contact->klaviyo_id){
-           AddMemberToListInKlaviyoJob::dispatch($contact)->onQueue('contact');
-       }
+        if(!$contact->klaviyo_id){
+           AddMemberToListInKlaviyoJob::dispatchIf(
+                    $request->user()->hasKlaviyoApiKeys() && $contact->contactList->isInKlaviyo(),
+                    $contact)
+                                       ->onQueue('contact');
+        }
 
         return response([
             'data' => $contact
-        ], 200);
+        ], Response::HTTP_OK);
     }
 }

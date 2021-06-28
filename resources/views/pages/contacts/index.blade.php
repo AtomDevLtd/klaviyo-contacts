@@ -14,11 +14,12 @@
             <div class="flex justify-end">
                 <form action="{{ route('contacts-import', $contactList) }}" method="POST" enctype="multipart/form-data">
                     @csrf
-                    <label for="file" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                        <span>Upload a file</span>
-                        <input type="file" name="file">
+                    <label class="bg-blue-500 hover:bg-blue-700 text-white font-bold mx-2 py-2 px-4 border border-blue-700 rounded">
+                        <span class="mt-2 text-base leading-normal">Select a file (xlsx,xls)</span>
+                        <input type='file' id="file" name="file" class="hidden" onchange='$("#upload-file-info").html($(this).val());'/>
                     </label>
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold mx-2 py-2 px-4 border border-blue-700 rounded">Import contacts</button>
+                    <span class='alert-info' id="upload-file-info"></span>
+                    <button disabled type="submit" class="disabled:opacity-50 bg-blue-500 hover:bg-blue-700 text-white font-bold mx-2 py-2 px-4 border border-blue-700 rounded">Import contacts</button>
                 </form>
                 <a href="{{ route('contactLists.contacts.create', $contactList) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded">
                     Create Contact
@@ -31,6 +32,8 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="flex flex-col">
+                    <x-success-message/>
+                    <x-validation-errors/>
                     <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                         <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
                             <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
@@ -46,11 +49,11 @@
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Phone
                                         </th>
-                                        <th scope="col" class="relative px-6 py-3">
-                                            <span class="sr-only">Edit</span>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                           Edit
                                         </th>
-                                        <th scope="col" class="relative px-6 py-3">
-                                            <span class="sr-only">Synced In Klaviyo</span>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            In Klaviyo
                                         </th>
                                     </tr>
                                     </thead>
@@ -73,22 +76,26 @@
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm text-gray-900">{{ $contact->phone }}</div>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                 <a href="{{ route('contactLists.contacts.edit', [$contactList, $contact->id]) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                @if($contact->klaviyo_id)
-                                                    <button data-synced="{{$contact->id}}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 synced">
-                                                        Synced
-                                                    </button>
-                                                @else
-                                                    <button class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-300 text-red--800 not-synced">
-                                                        Not synced
-                                                    </button>
-                                                    <button  data-sync-with-klaviyo-id="{{$contact->id}}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-200 text-red-600 try-sync">
-                                                        Try
-                                                    </button>
-                                                @endif
+                                                @if(auth()->user()->hasKlaviyoApiKeys() && $contactList->isInKlaviyo())
+                                                    @if($contact->klaviyo_id)
+                                                        <button data-synced="{{$contact->id}}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 synced">
+                                                            Synced
+                                                        </button>
+                                                    @else
+                                                        <button class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-300 text-red--800 not-synced">
+                                                            Not synced
+                                                        </button>
+                                                        <button  data-sync-with-klaviyo-id="{{$contact->id}}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-200 text-red-600 try-sync">
+                                                            Try
+                                                        </button>
+                                                    @endif
+                                                 @else
+                                                    <p>No API keys set or contact list not synced</p>
+                                                 @endif
                                             </td>
                                         </tr>
                                     @endforeach
@@ -139,6 +146,13 @@
 
                     }
 
+                });
+
+
+                $('body').on('change', '#file', function (e){
+                    if ($(this).val()) {
+                        $('button:submit').attr('disabled',false);
+                    }
                 });
             });
 

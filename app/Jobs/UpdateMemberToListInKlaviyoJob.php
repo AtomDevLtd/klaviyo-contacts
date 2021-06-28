@@ -21,6 +21,11 @@ class UpdateMemberToListInKlaviyoJob implements ShouldQueue
      */
     public Contact $contact;
 
+    /**
+     * @var User $user
+     */
+    public User $user;
+
 
     /**
      * Create a new job instance.
@@ -30,6 +35,7 @@ class UpdateMemberToListInKlaviyoJob implements ShouldQueue
     public function __construct(Contact $contact)
     {
         $this->contact = $contact;
+        $this->user    = $contact->contactList->user;
     }
 
     /**
@@ -42,7 +48,7 @@ class UpdateMemberToListInKlaviyoJob implements ShouldQueue
         $url = config('project.klaviyo_base_url') .
             '/v1/person/' .
             $this->contact->klaviyo_id .
-            '?api_key=' . config('project.klaviyo_account_key') .
+            '?api_key=' . $this->user->klaviyo_private_api_key .
             '&$email=' . $this->contact->email .
             '&$last_name=' . $this->contact->last_name .
             '&$first_name=' . $this->contact->first_name .

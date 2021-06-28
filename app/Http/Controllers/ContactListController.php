@@ -8,6 +8,7 @@ use App\Jobs\CreateListInKlaviyoJob;
 use App\Jobs\UpdateListInKlaviyoJob;
 use App\Models\ContactList;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class ContactListController extends Controller
 {
@@ -49,9 +50,10 @@ class ContactListController extends Controller
             'user_id'     => $request->user()->getKey()
         ]);
 
-        CreateListInKlaviyoJob::dispatch($contactList)->onQueue('contact-list');
+        CreateListInKlaviyoJob::dispatchIf($request->user()->hasKlaviyoApiKeys(), $contactList)
+                              ->onQueue('contact-list');
 
-        return redirect()->route('contactLists.index');
+        return redirect()->route('contactLists.index')->with('message', 'Contact List saved successfully');
     }
 
 
@@ -85,19 +87,33 @@ class ContactListController extends Controller
             'name' => $validated['name']
         ]);
 
-        UpdateListInKlaviyoJob::dispatch($contactList)->onQueue('contact-list');
+        UpdateListInKlaviyoJob::dispatchIf($request->user()->hasKlaviyoApiKeys(), $contactList)
+                              ->onQueue('contact-list');
 
-        return redirect()->route('contactLists.index');
+        return redirect()->route('contactLists.index')->with('message', 'Contact List updated successfully');
     }
+
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\ContactList  $contactList
+     * @param Request $request
+     * @param \App\Models\ContactList $contactList
      * @return \Illuminate\Http\Response
      */
-    public function destroy(ContactList $contactList)
+    public function syncWithKlaviyo(Request $request, ContactList $contactList): Response
     {
-        //
+        if(!$contactList->isInKlaviyo()){
+            CreateListInKlaviyoJob::dispatchIf(
+                $request->user()->hasKlaviyoApiKeys(),
+                $contactList
+            )
+                ->onQueue('contact-list');
+        }
+
+        return response([
+            'data' => $contactList
+        ], Response::HTTP_OK);
     }
+
 }

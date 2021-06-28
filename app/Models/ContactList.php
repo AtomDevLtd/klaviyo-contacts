@@ -47,6 +47,11 @@ class ContactList extends Model
      * should begin from here.
      */
 
+    public function isInKlaviyo(): bool
+    {
+        return filled($this->klaviyo_id);
+    }
+
     /**
      * All of the models method overwrites
      * should begin from here.

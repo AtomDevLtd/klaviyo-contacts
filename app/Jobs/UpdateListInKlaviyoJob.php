@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\ContactList;
+use App\Models\User;
 use App\Services\Facades\KlaviyoConnection;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -21,6 +22,11 @@ class UpdateListInKlaviyoJob implements ShouldQueue
     public ContactList $contactList;
 
     /**
+     * @var User $user
+     */
+    public User $user;
+
+    /**
      * Create a new job instance.
      *
      * @return void
@@ -28,6 +34,7 @@ class UpdateListInKlaviyoJob implements ShouldQueue
     public function __construct(ContactList $contactList)
     {
         $this->contactList = $contactList;
+        $this->user = $contactList->user;
     }
 
     /**
@@ -40,6 +47,6 @@ class UpdateListInKlaviyoJob implements ShouldQueue
         KlaviyoConnection::url(config('project.klaviyo_base_url') . '/v2/list/' . $this->contactList->klaviyo_id)
                          ->header('Content-Type', 'application/x-www-form-urlencoded')
                          ->data($this->contactList)
-                         ->updateList();
+                         ->updateList($this->user);
     }
 }

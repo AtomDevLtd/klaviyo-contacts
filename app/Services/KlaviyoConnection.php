@@ -6,6 +6,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
+use Exception;
 
 class KlaviyoConnection
 {
@@ -70,13 +71,13 @@ class KlaviyoConnection
         return $this;
     }
 
-    public function updateList(): self
+    public function updateList($user): self
     {
         $response =  Http::withHeaders($this->headers)
                          ->asForm()
                          ->put($this->url, [
                             'list_name' => $this->data->name,
-                            'api_key'   => config('project.klaviyo_account_key')
+                            'api_key'   => $user->klaviyo_private_api_key
                          ]);
 
         $this->response = $response->json();
@@ -132,6 +133,11 @@ class KlaviyoConnection
 
     public function  saveKlaviyoProfileId(): void
     {
+        throw_unless(
+            isset($this->response[0]['id']),
+            new Exception('Validation error. The contact was not saved in klaviyo.')
+        );
+
         $this->data->update([
             'klaviyo_id'            => $this->response[0]['id'],
             'klaviyo_sync_datetime' => now()

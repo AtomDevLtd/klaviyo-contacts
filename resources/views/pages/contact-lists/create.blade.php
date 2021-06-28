@@ -19,6 +19,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="mt-10 sm:mt-0">
                     <div>
+                        <x-validation-errors/>
                         <form action="{{ route('contactLists.store') }}" method="POST">
                             @csrf
                             <div class="shadow overflow-hidden sm:rounded-md">

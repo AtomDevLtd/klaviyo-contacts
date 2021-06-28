@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'klaviyo_public_api_key',
+        'klaviyo_private_api_key'
     ];
 
     /**
@@ -56,6 +58,11 @@ class User extends Authenticatable
      * All of the models custom methods
      * should begin from here.
      */
+
+    public function hasKlaviyoApiKeys(): bool
+    {
+        return $this->klaviyo_public_api_key && $this->klaviyo_private_api_key;
+    }
 
     /**
      * All of the models method overwrites
