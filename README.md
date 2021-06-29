@@ -1,25 +1,95 @@
+[comment]: <> (## Requirements)
+
+[comment]: <> (PHP >= 7.4,)
+
+[comment]: <> (node )
+
+[comment]: <> (npm)
+
+[comment]: <> (composer)
+
+[comment]: <> (Mysql)
+
+[comment]: <> (Redis)
+
+[comment]: <> (## Setup)
+
+[comment]: <> (1. composer install)
+
+[comment]: <> (2. npm install && npm run dev)
+
+[comment]: <> (3. create DB )
+
+[comment]: <> (4. create Klaviyo account and get your private api_key)
+
+[comment]: <> (5. KLAVIYO_ACCOUNT_KEY={the api_key klaviyo})
+
+[comment]: <> (   CACHE_DRIVER=redis)
+
+[comment]: <> (   QUEUE_CONNECTION=redis)
+
+[comment]: <> (   SESSION_DRIVER=redis)
+
+[comment]: <> (   SESSION_LIFETIME=1440)
+
+[comment]: <> (6. php artisan migrate   )
+
+[comment]: <> (7. php artisan horizon )
+
+# Klaviyo contacts task 
+Klaviyo contacts is a system in which user can register, create and edit contact lists with contacts. Each contact list can hold multiple contacts with its properties such as email, first name, title, organization and phone. Every contact list and contact can be sync within an account in www.klaviyo.com. After the user register there. He will get an public and private API keys. After they put them in their profile, all of the created contact lists or contacts will automatically be send to their klaviyo account. You can also mass import contacts from Excel (xlsx) with heading columns - email, first_name, last_name, title, organization, phone (the phone must be in compatible format - help.klaviyo.com). Those contacts wont be automatically sent in klaviyo. Each contact can be send after that individually.
+
 ## Requirements
-
-PHP >= 7.4,
-node 
-npm
+```
+PHP >= 7.4
 composer
-Mysql
+node
+npm
+MySQL or PostgreSQL
 Redis
+```
 
-## Setup
 
-1. composer install
-2. npm install && npm run dev
-3. create DB 
-4. create Klaviyo account and get your private api_key
-5. KLAVIYO_ACCOUNT_KEY={the api_key klaviyo}
-   CACHE_DRIVER=redis
-   QUEUE_CONNECTION=redis
-   SESSION_DRIVER=redis
-   SESSION_LIFETIME=1440
-6. php artisan migrate   
-7. php artisan horizon 
+## Installation
+```
+composer install
+npm install && npm run dev
+cp .env.example .env
+php artisan key:generate
+```
+Configure your DB in the .env and set these variables
+
+```
+CACHE_DRIVER=redis
+QUEUE_CONNECTION=redis
+SESSION_DRIVER=redis
+```
+Now you can run your migration and start the migration and the queue system.
+
+```
+php artisan migrate
+php artisan horizon
+```
+
+- [ ] With Laravel Horizon you can monitor your queued jobs.
+- [ ] Horizon exposes a dashboard at the /horizon
+
+## Screenshots
+ In your profile you can set the api keys from after you make a registration https://www.klaviyo.com/account#api-keys-tab
+
+![Klaviyo api keys](./storage/screenshots/api-keys-screen.png)
+  
+Import contacts Excel file example. (The phone must compile with the standards given in [here](https://help.klaviyo.com/hc/en-us/articles/360046055671-Accepted-Phone-Number-Formats-for-SMS-in-Klaviyo#accepted-phone-number-formats1))  
+
+![Import format](./storage/screenshots/import-screen.png)
+
+If some row misses its klaviyo_id it means it's not synced in Klaviyo.
+You click "try" the system will run a job that will send the information.
+When you refresh the page the row should be synced
+
+![Contacts](./storage/screenshots/contacts-screen.png)
+
+
 
 
 
