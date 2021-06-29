@@ -1,43 +1,11 @@
-[comment]: <> (## Requirements)
-
-[comment]: <> (PHP >= 7.4,)
-
-[comment]: <> (node )
-
-[comment]: <> (npm)
-
-[comment]: <> (composer)
-
-[comment]: <> (Mysql)
-
-[comment]: <> (Redis)
-
-[comment]: <> (## Setup)
-
-[comment]: <> (1. composer install)
-
-[comment]: <> (2. npm install && npm run dev)
-
-[comment]: <> (3. create DB )
-
-[comment]: <> (4. create Klaviyo account and get your private api_key)
-
-[comment]: <> (5. KLAVIYO_ACCOUNT_KEY={the api_key klaviyo})
-
-[comment]: <> (   CACHE_DRIVER=redis)
-
-[comment]: <> (   QUEUE_CONNECTION=redis)
-
-[comment]: <> (   SESSION_DRIVER=redis)
-
-[comment]: <> (   SESSION_LIFETIME=1440)
-
-[comment]: <> (6. php artisan migrate   )
-
-[comment]: <> (7. php artisan horizon )
-
 # Klaviyo contacts task 
 Klaviyo contacts is a system in which user can register, create and edit contact lists with contacts. Each contact list can hold multiple contacts with its properties such as email, first name, title, organization and phone. Every contact list and contact can be sync within an account in www.klaviyo.com. After the user register there. He will get an public and private API keys. After they put them in their profile, all of the created contact lists or contacts will automatically be send to their klaviyo account. You can also mass import contacts from Excel (xlsx) with heading columns - email, first_name, last_name, title, organization, phone (the phone must be in compatible format - help.klaviyo.com). Those contacts wont be automatically sent in klaviyo. Each contact can be send after that individually.
+
+#Staging environment
+You can test everything here.
+```
+https://klaviyo-contacts.atomdev.dev/
+```
 
 ## Requirements
 ```
